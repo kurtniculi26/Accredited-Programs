@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Accredited List of Programs in Region X</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+      font-size: 13px;
+      color: #1a1f36;
+      background: #eef2f9;
+    }
+
+    #layout {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    #topbar {
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #1967d2 0%, #1a73e8 60%, #2684ff 100%);
+      color: #fff;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 2px 12px rgba(26,115,232,.35);
+      z-index: 20;
+    }
+
+    #topbar h1 {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #prog-count {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      margin-left: auto;
+      line-height: 1.2;
+    }
+    #prog-count .count-num {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.5px;
+      color: #fff;
+    }
+    #prog-count .count-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: rgba(255,255,255,.75);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+
+    #filterbar {
+      flex-shrink: 0;
+      background: #fff;
+      border-bottom: 1px solid #e0e6f0;
+      padding: 10px 24px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      z-index: 10;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+
+    .act-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 13px;
+      border: 1.5px solid #d0d7e8;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      background: #fff;
+      color: #3d4966;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .18s ease;
+    }
+    .act-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 3px 8px rgba(0,0,0,.1);
+    }
+    .act-btn:active { transform: translateY(0); box-shadow: none; }
+    .act-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    #btn-expand {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-color: #a5d6a7;
+    }
+    #btn-expand:hover {
+      background: #c8e6c9;
+      border-color: #66bb6a;
+      color: #1b5e20;
+    }
+
+    #btn-collapse {
+      background: #fff3e0;
+      color: #e65100;
+      border-color: #ffcc80;
+    }
+    #btn-collapse:hover {
+      background: #ffe0b2;
+      border-color: #ffa726;
+      color: #bf360c;
+    }
+
+    .btn-group-right {
+      margin-left: auto;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .filter-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .filter-group .filter-icon {
+      position: absolute;
+      left: 10px;
+      color: #9aa5bc;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .filter-group .filter-icon svg { width: 13px; height: 13px; }
+
+    #filterbar input[type="text"],
+    #filterbar select {
+      padding: 7px 10px 7px 32px;
+      border: 1.5px solid #d0d7e8;
+      border-radius: 7px;
+      font-size: 12px;
+      font-family: inherit;
+      background: #f7f9fd;
+      color: #1a1f36;
+      outline: none;
+      transition: border-color .18s, background .18s, box-shadow .18s;
+    }
+    #filterbar select {
+      padding-left: 10px;
+      cursor: pointer;
+    }
+    #filterbar input[type="text"]:focus,
+    #filterbar select:focus {
+      border-color: #1a73e8;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(26,115,232,.12);
+    }
+
+    #q            { flex: 2; min-width: 160px; }
+    #sel-prog     { flex: 1.5; min-width: 135px; max-width: 210px; }
+    #sel-major    { flex: 1; min-width: 110px; max-width: 160px; } /* ADDED */
+    #sel-agency   { flex: 1;   min-width: 125px; max-width: 195px; }
+    #sel-status   { flex: 1;   min-width: 125px; max-width: 195px; }
+
+    #btn-clear {
+      flex-shrink: 0;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 13px;
+      background: #fff0ee;
+      color: #c0392b;
+      border: 1.5px solid #f8c6c2;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all .18s;
+    }
+    #btn-clear:hover {
+      background: #fce8e6;
+      border-color: #e57373;
+      transform: translateY(-1px);
+    }
+    #btn-clear:active { transform: translateY(0); }
+    #btn-clear svg { width: 13px; height: 13px; }
+
+    #cards-wrap {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 16px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+    }
+    #cards-wrap::-webkit-scrollbar { width: 6px; }
+    #cards-wrap::-webkit-scrollbar-track { background: transparent; }
+    #cards-wrap::-webkit-scrollbar-thumb { background: #c5cfe0; border-radius: 4px; }
+    #cards-wrap::-webkit-scrollbar-thumb:hover { background: #9aacc7; }
+
+    .hei-item {
+      background: #fff;
+      border: 1.5px solid #e2e8f4;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(26,60,130,.06);
+      transition: border-color .2s, box-shadow .2s, transform .15s;
+      animation: slideIn .3s ease both;
+    }
+    .hei-item:hover {
+      border-color: #90b8f8;
+      box-shadow: 0 3px 12px rgba(26,115,232,.12);
+    }
+    .hei-item.is-open {
+      border-color: #1a73e8;
+      box-shadow: 0 4px 16px rgba(26,115,232,.16);
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hei-header {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      min-height: 54px;
+      padding: 10px 0;
+      background: #fff;
+      user-select: none;
+      transition: background .18s;
+    }
+    .hei-item.is-open .hei-header { background: #eef4ff; }
+    .hei-header:hover { background: #f4f8ff; }
+    .hei-item.is-open .hei-header:hover { background: #e4effe; }
+
+    .hei-arrow {
+      flex-shrink: 0;
+      width: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9aacc7;
+      transition: color .2s;
+    }
+    .hei-item.is-open .hei-arrow { color: #1a73e8; }
+    .hei-arrow svg {
+      width: 18px;
+      height: 18px;
+      transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+    }
+    .hei-item.is-open .hei-arrow svg { transform: rotate(90deg); }
+
+    .hei-name {
+      flex: 1;
+      min-width: 0;
+      margin-left: 4px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #1558b0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      letter-spacing: -.1px;
+      transition: color .18s;
+    }
+    .hei-item.is-open .hei-name { color: #1a73e8; }
+
+    .hei-badge {
+      flex-shrink: 0;
+      margin: 0 16px;
+      padding: 4px 13px;
+      background: #eef4ff;
+      color: #1558b0;
+      border: 1.5px solid #b8d0f8;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      transition: background .2s, color .2s, border-color .2s;
+    }
+    .hei-item.is-open .hei-badge {
+      background: #1a73e8;
+      border-color: #1558b0;
+      color: #fff;
+    }
+
+    .hei-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.38s cubic-bezier(.4,0,.2,1);
+    }
+    .hei-item.is-open .hei-body {
+      border-top: 2px solid #b8d0f8;
+    }
+
+    .hei-table-scroll {
+      overflow-x: auto;
+      overflow-y: visible;
+    }
+    .hei-table-scroll::-webkit-scrollbar { height: 5px; }
+    .hei-table-scroll::-webkit-scrollbar-track { background: transparent; }
+    .hei-table-scroll::-webkit-scrollbar-thumb { background: #c5cfe0; border-radius: 4px; }
+    .hei-table-scroll::-webkit-scrollbar-thumb:hover { background: #9aacc7; }
+
+    .prog-table {
+      width: auto;
+      min-width: 100%;
+      border-collapse: collapse;
+    }
+    .prog-table thead { background: #f4f8ff; }
+    .prog-table th {
+      padding: 8px 14px;
+      font-size: 10.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: #6b7fa8;
+      text-align: left;
+      border-bottom: 1.5px solid #dde6f5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .prog-table td {
+      padding: 8px 14px;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: #1a1f36;
+      border-bottom: 1px solid #f0f4fb;
+      vertical-align: top;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      transition: background .12s;
+    }
+    .prog-table tbody tr:last-child td { border-bottom: none; }
+    .prog-table tbody tr:hover td { background: #f7faff; }
+
+    .prog-group-first td { border-top: 2px solid #e8eef8 !important; }
+
+    td.col-prog { vertical-align: top; text-align: left; font-weight: 500; white-space: normal; max-width: 280px; word-break: break-word; }
+    .col-prog   { width: 22%; min-width: 180px; }
+    .col-major  { width: 16%; } /* ADDED */
+    .col-agency { width: 16%; }
+    .col-status { width: 16%; }
+    .col-date   { width: 16%; }
+    .col-files  { width: 8%; }
+    .col-extra  { min-width: 130px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1px;
+      background: #e6f4ea;
+      color: #137333;
+      border: 1px solid #b7dfc3;
+      white-space: nowrap;
+    }
+    .pill-warn    { background: #fef7e0; color: #8a5000; border-color: #f5dfa0; }
+    .pill-expired { background: #fce8e6; color: #c0392b; border-color: #f5c6c4; }
+    .pill-inactive {
+      background: #f4f6fb;
+      color: #8a94b0;
+      border-color: #dde4f0;
+    }
+
+    .past { color: #c0392b; font-weight: 600; }
+    .none-val { color: #c8d0e0; }
+
+    .file-wrap { display: flex; flex-wrap: wrap; gap: 5px; }
+    .fbtn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: #eef4ff;
+      color: #1967d2;
+      border: 1.5px solid #b8d0f8;
+      border-radius: 7px;
+      text-decoration: none;
+      position: relative;
+      transition: background .18s, border-color .18s, color .18s, transform .15s, box-shadow .18s;
+    }
+    .fbtn:hover {
+      background: #1a73e8;
+      color: #fff;
+      border-color: #1a73e8;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(26,115,232,.3);
+    }
+    .fbtn:active { transform: translateY(0); box-shadow: none; }
+    .fbtn svg { width: 14px; height: 14px; pointer-events: none; }
+    .fbtn::after {
+      content: attr(title);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: #1a1f36;
+      color: #fff;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .15s, transform .15s;
+    }
+    .fbtn:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .msg { text-align: center; padding: 80px 20px; color: #8a94b0; }
+    .msg p { font-size: 13px; font-weight: 500; margin-top: 12px; }
+    .spin {
+      width: 36px; height: 36px;
+      margin: 0 auto;
+      border: 3px solid #dde6f5;
+      border-top-color: #1a73e8;
+      border-radius: 50%;
+      animation: spin .7s cubic-bezier(.6,0,.4,1) infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #footer {
+      flex-shrink: 0;
+      background: #fff;
+      border-top: 1px solid #e0e6f0;
+      padding: 7px 24px;
+      font-size: 11px;
+      color: #9aacc7;
+      text-align: right;
+      font-weight: 500;
+      letter-spacing: .1px;
+    }
+  </style>
+</head>
+<body>
+<div id="layout">
+
+  <div id="topbar">
+    <h1>Accredited List of Programs in Region X</h1>
+    <div id="prog-count">
+      <span class="count-num" id="prog-count-num">—</span>
+      <span class="count-label">Total Accredited Programs</span>
+    </div>
+  </div>
+
+  <div id="filterbar">
+    <div class="filter-group">
+      <span class="filter-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </span>
+      <input type="text" id="q" placeholder="Search HEI or programs…" oninput="applyFilter()"/>
+    </div>
+    <select id="sel-prog"   onchange="applyFilter()"><option value="">All Programs</option></select>
+    <select id="sel-major"  onchange="applyFilter()"><option value="">All Majors</option></select> <select id="sel-agency" onchange="applyFilter()"><option value="">All Agencies</option></select>
+    <select id="sel-status" onchange="applyFilter()"><option value="">All Status</option></select>
+    <button id="btn-clear" onclick="clearFilters()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+      Clear
+    </button>
+    <div class="btn-group-right">
+      <button id="btn-expand" class="act-btn" onclick="setAllOpen(true)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="6 9 12 15 18 9"/></svg>
+        Expand All
+      </button>
+      <button id="btn-collapse" class="act-btn" onclick="setAllOpen(false)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polyline points="18 15 12 9 6 15"/></svg>
+        Collapse All
+      </button>
+    </div>
+  </div>
+
+  <div id="cards-wrap">
+    <div class="msg"><div class="spin"></div><p>Loading records…</p></div>
+  </div>
+
+  <div id="footer"></div>
+</div>
+
+<script>
+  var IDX = {}, ALL_RECORDS = [], ALL_LABELS = [];
+
+  google.script.run
+    .withSuccessHandler(function(data) {
+      IDX = data.idx || {}; ALL_LABELS = data.labels || []; ALL_RECORDS = data.records || [];
+      if (IDX.program >= 0) fillSelect("sel-prog",   ALL_RECORDS.map(function(r){ return r.cols[IDX.program]; }));
+      if (IDX.major   >= 0) fillSelect("sel-major",  ALL_RECORDS.map(function(r){ return r.cols[IDX.major];   })); // ADDED
+      if (IDX.agency  >= 0) fillSelect("sel-agency", ALL_RECORDS.map(function(r){ return r.cols[IDX.agency];  }));
+      if (IDX.status  >= 0) fillSelect("sel-status", ALL_RECORDS.map(function(r){ return r.cols[IDX.status];  }));
+      draw(ALL_RECORDS);
+    })
+    .withFailureHandler(function(e) {
+      document.getElementById("cards-wrap").innerHTML = "<div class='msg'><p>Error: " + esc(e.message) + "</p></div>";
+    })
+    .getAllRecords();
+
+  function esc(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  function fillSelect(id, vals) {
+    var sel = document.getElementById(id), seen = Object.create(null), unique = [];
+    vals.forEach(function(v){ if (v && !seen[v]){ seen[v]=1; unique.push(v); } });
+    unique.sort().forEach(function(v){
+      var o = document.createElement("option"); o.value = o.textContent = v; sel.appendChild(o);
+    });
+  }
+
+  function getTableCols() {
+    var skip = {}; if (IDX.no >= 0) skip[IDX.no] = true; if (IDX.hei >= 0) skip[IDX.hei] = true;
+    var cols = []; for (var i = 0; i < ALL_LABELS.length; i++) { if (!skip[i]) cols.push(i); } return cols;
+  }
+
+  function groupByHei(records) {
+    var map = Object.create(null), order = [];
+    records.forEach(function(r){ var k = IDX.hei >= 0 ? (r.cols[IDX.hei] || "") : ""; if (!map[k]){ map[k]=[]; order.push(k); } map[k].push(r); });
+    return order.map(function(h){ return { hei: h, rows: map[h] }; });
+  }
+
+  function groupPrograms(records) {
+    var map = Object.create(null), order = [];
+    records.forEach(function(r){ var k = IDX.program >= 0 ? (r.cols[IDX.program] || "") : ""; if (!map[k]){ map[k]=[]; order.push(k); } map[k].push(r); });
+    return order.map(function(p){ var e = map[p]; return { program: p, entries: e, bestIdx: findBestEntry(e) }; });
+  }
+
+  function getLevelNum(s) {
+    if (!s) return 0; var m = String(s).toLowerCase().match(/level[\s\-]*(iv|iii|ii|i|v|\d+)/);
+    if (!m) return 0; var rn = {i:1,ii:2,iii:3,iv:4,v:5}; return rn[m[1]] !== undefined ? rn[m[1]] : (parseInt(m[1],10)||0);
+  }
+
+  function findBestEntry(entries) {
+    var bestIdx = 0;
+    for (var i = 1; i < entries.length; i++) {
+      var lvlI    = getLevelNum(IDX.status >= 0 ? entries[i].cols[IDX.status]       : "");
+      var lvlBest = getLevelNum(IDX.status >= 0 ? entries[bestIdx].cols[IDX.status] : "");
+      if (lvlI > lvlBest) { bestIdx = i; continue; }
+      if (lvlI < lvlBest) continue;
+      var dI    = parseDate(entries[i].date);
+      var dBest = parseDate(entries[bestIdx].date);
+      if       (!dBest && dI)       bestIdx = i;
+      else if (dBest && dI && dI > dBest) bestIdx = i;
+    }
+    return bestIdx;
+  }
+
+  function isFilterActive() {
+    return ["q","sel-prog","sel-major","sel-agency","sel-status"].some(function(id){ return document.getElementById(id).value !== ""; });
+  }
+
+  function toggleClearBtn() {
+    document.getElementById("btn-clear").style.display = isFilterActive() ? "inline-flex" : "none";
+  }
+
+  function clearFilters() {
+    ["q","sel-prog","sel-major","sel-agency","sel-status"].forEach(function(id){ document.getElementById(id).value = ""; });
+    toggleClearBtn(); draw(ALL_RECORDS);
+  }
+
+  function applyFilter() {
+    toggleClearBtn();
+    var q = document.getElementById("q").value.toLowerCase(),
+        pg = document.getElementById("sel-prog").value,
+        mj = document.getElementById("sel-major").value, // ADDED
+        ag = document.getElementById("sel-agency").value,
+        st = document.getElementById("sel-status").value;
+    var out = ALL_RECORDS.filter(function(r){
+      if (ag && IDX.agency  >= 0 && r.cols[IDX.agency]  !== ag) return false;
+      if (st && IDX.status  >= 0 && r.cols[IDX.status]  !== st) return false;
+      if (pg && IDX.program >= 0 && r.cols[IDX.program] !== pg) return false;
+      if (mj && IDX.major   >= 0 && r.cols[IDX.major]   !== mj) return false; // ADDED
+      if (q && !r.cols.some(function(v){ return String(v).toLowerCase().indexOf(q) > -1; })) return false;
+      return true;
+    });
+    draw(out); if (isFilterActive()) setAllOpen(true);
+  }
+
+  function draw(records) {
+    var wrap = document.getElementById("cards-wrap"), groups = groupByHei(records);
+    document.getElementById("prog-count-num").textContent = records.length;
+    if (!groups.length) { wrap.innerHTML = "<div class='msg'><p>No records found.</p></div>"; setFooter(0, ALL_RECORDS.length); return; }
+    wrap.innerHTML = "";
+    var tableCols = getTableCols();
+    groups.forEach(function(g, gi) {
+      var item = document.createElement("div");
+      item.className = "hei-item";
+      item.style.animationDelay = (gi * 35) + "ms";
+
+      var header = document.createElement("div"); header.className = "hei-header";
+      var arrowDiv = document.createElement("div"); arrowDiv.className = "hei-arrow";
+      arrowDiv.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>';
+      var nameDiv = document.createElement("div"); nameDiv.className = "hei-name"; nameDiv.textContent = g.hei;
+      var progGroups = groupPrograms(g.rows);
+      var badge = document.createElement("span"); badge.className = "hei-badge";
+      badge.textContent = progGroups.length + (progGroups.length === 1 ? " program" : " programs");
+      header.appendChild(arrowDiv); header.appendChild(nameDiv); header.appendChild(badge);
+
+      var body = document.createElement("div"); body.className = "hei-body";
+      var table = document.createElement("table"); table.className = "prog-table";
+      var thead = document.createElement("thead"), hrow = document.createElement("tr");
+      tableCols.forEach(function(ci){
+        var th = document.createElement("th"); th.textContent = ALL_LABELS[ci] || ""; th.className = colClass(ci); hrow.appendChild(th);
+      });
+      thead.appendChild(hrow); table.appendChild(thead);
+
+      var tbody = document.createElement("tbody");
+      progGroups.forEach(function(pg, pgIdx){
+        pg.entries.forEach(function(r, ei){
+          var tr = document.createElement("tr");
+          if (pgIdx > 0 && ei === 0) tr.className = "prog-group-first";
+          tableCols.forEach(function(ci){
+            if (ci === IDX.program) {
+              if (ei === 0) {
+                var tdP = document.createElement("td"); tdP.className = "col-prog";
+                if (pg.entries.length > 1) tdP.rowSpan = pg.entries.length;
+                var pv = r.cols[ci]; tdP.innerHTML = (pv != null && pv !== "") ? esc(pv) : "<span class='none-val'>—</span>";
+                tr.appendChild(tdP);
+              }
+              return;
+            }
+            var td = document.createElement("td"); td.className = colClass(ci);
+            if      (ci === IDX.status) td.innerHTML = pillHtml(r.cols[ci], ei === pg.bestIdx);
+            else if (ci === IDX.date)   td.innerHTML = dateFmtHtml(r.date);
+            else if (ci === IDX.files)  td.innerHTML = fileBtnsHtml(r.files);
+            else { var v = r.cols[ci]; td.innerHTML = (v != null && v !== "") ? esc(v) : "<span class='none-val'>—</span>"; }
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+      });
+      table.appendChild(tbody); 
+      var scrollWrap = document.createElement("div");
+      scrollWrap.className = "hei-table-scroll";
+      scrollWrap.appendChild(table);
+      body.appendChild(scrollWrap);
+
+      header.addEventListener("click", function(){
+        var open = item.classList.contains("is-open");
+        if (open){ body.style.maxHeight = "0"; item.classList.remove("is-open"); }
+        else {
+          item.classList.add("is-open");
+          body.style.maxHeight = (scrollWrap.scrollHeight + 2) + "px";
+        }
+      });
+
+      item.appendChild(header); item.appendChild(body); wrap.appendChild(item);
+    });
+    setFooter(records.length, ALL_RECORDS.length);
+  }
+
+  function colClass(ci) {
+    if (ci === IDX.program) return "col-prog"; 
+    if (ci === IDX.major)   return "col-major";  // ADDED
+    if (ci === IDX.agency)  return "col-agency";
+    if (ci === IDX.status)  return "col-status"; 
+    if (ci === IDX.date)    return "col-date";
+    if (ci === IDX.files)   return "col-files"; 
+    return "col-extra";
+  }
+
+  function setAllOpen(open) {
+    document.querySelectorAll(".hei-item").forEach(function(el){
+      var b = el.querySelector(".hei-body");
+      var sw = el.querySelector(".hei-table-scroll");
+      el.classList.toggle("is-open", open);
+      if (b) b.style.maxHeight = open ? ((sw ? sw.scrollHeight : b.scrollHeight) + 2) + "px" : "0";
+    });
+  }
+
+  function pillHtml(s, isActive) {
+    if (!s) return "<span class='none-val'>—</span>";
+    if (!isActive) return "<span class='pill pill-inactive'>" + esc(s) + "</span>";
+    var l = s.toLowerCase(), cls = "pill";
+    if      (l.indexOf("applying") > -1)                          cls += " pill-warn";
+    else if (l.indexOf("expired")  > -1 || l.indexOf("lapse") > -1) cls += " pill-expired";
+    return "<span class='" + cls + "'>" + esc(s) + "</span>";
+  }
+
+  function parseDate(s) {
+    if (!s) return null; var d = new Date(s); if (!isNaN(d)) return d;
+    var parts = s.match(/(\w+\.?\s+\d{1,2},?\s+\d{4})/g);
+    if (parts && parts.length){ var last = new Date(parts[parts.length-1]); if (!isNaN(last)) return last; } return null;
+  }
+
+  function dateFmtHtml(d) {
+    if (!d) return "<span class='none-val'>—</span>"; var pd = parseDate(d), past = pd && pd < new Date();
+    return "<span" + (past ? " class='past'" : "") + ">" + esc(d) + "</span>";
+  }
+
+  function fileBtnsHtml(links) {
+    if (!links || !links.length) return "<span class='none-val'>—</span>";
+    return "<div class='file-wrap'>" + links.map(function(u, i){
+      var lbl = links.length > 1 ? "File " + (i+1) : "File";
+      return "<a class='fbtn' href='" + esc(u) + "' target='_blank' title='" + esc(lbl) + "'>" +
+        "<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24'>" +
+        "<path fill='currentColor' d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'/>" +
+        "<polyline fill='none' stroke='#fff' stroke-width='2' points='14 2 14 8 20 8'/></svg></a>";
+    }).join("") + "</div>";
+  }
+
+  function setFooter(n, total) {
+    document.getElementById("footer").textContent =
+      n === total ? "Showing all " + total + " records" : "Showing " + n + " of " + total + " records";
+  }
+</script>
+</body>
+</html>
